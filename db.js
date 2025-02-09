@@ -1,29 +1,30 @@
-const mysql = require("mysql");
+const mysql = require("mysql2");
+require("dotenv").config();
 
 const dbConfig = {
-  host: "database-2.c3k4oka820lq.ap-northeast-1.rds.amazonaws.com",
-  user: "admin",
-  password: "omX6RN5xylBuQFekxvsA",
-  database: "todo2",
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "pidica_user",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "todo_app",
 };
+
 const pool = mysql.createPool(dbConfig);
 
-pool.connect((err) => {
+// Test the connection
+pool.getConnection((err, connection) => {
   if (err) {
-    console.log("failed to connect to database");
+    console.error("Error connecting to the database:", err);
+    return;
   }
-
-  console.log("successfully connected to database");
+  console.log("Successfully connected to database");
+  connection.release();
 });
 
 async function runTransaction(transactionCallback) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-
-    // Execute the provided transaction callback
     const result = await transactionCallback(connection);
-
     await connection.commit();
     console.log("Transaction successful!");
     return result;
@@ -35,6 +36,7 @@ async function runTransaction(transactionCallback) {
     connection.release();
   }
 }
+
 module.exports = {
   pool,
   dbConfig,

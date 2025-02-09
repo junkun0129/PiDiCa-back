@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { pool } = require("../db");
 
 function generateRandomString(length) {
   const characters =
@@ -10,6 +11,14 @@ function generateRandomString(length) {
   }
   return result;
 }
+const executeQuery = (sql, values) => {
+  return new Promise((resolve, reject) => {
+    pool.query(sql, values, (err, result) => {
+      if (err) reject(err);
+      resolve(result);
+    });
+  });
+};
 
 const getUserCd = (req) => {
   const authHeader = req.headers["authorization"];
@@ -79,4 +88,5 @@ module.exports = {
   commitTransaction,
   rollbackTransaction,
   transaction,
+  executeQuery,
 };

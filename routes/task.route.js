@@ -1,4 +1,3 @@
-const { getTaskList } = require("../controllers/task.controller");
 const { authMiddleware } = require("../middlewares/auth.middleware");
 const {
   getTaskList,
