@@ -1,6 +1,7 @@
+const { PrismaClient } = require("@prisma/client");
 const mysql = require("mysql2/promise");
 require("dotenv").config();
-
+const prisma = new PrismaClient();
 const dbConfig = {
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "pidica_user",
@@ -45,6 +46,7 @@ async function runTransaction(transactionCallback) {
 }
 
 module.exports = {
+  prisma,
   pool,
   dbConfig,
   runTransaction,

@@ -23,30 +23,10 @@ const executeQuery = async (sql, values) => {
     throw err;
   }
 };
-function getFormattedDate(format = "YYYY-MM-DD") {
-  const today = new Date();
-
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0"); // 月は0から始まるので+1
-  const day = String(today.getDate()).padStart(2, "0"); // 2桁にする
-
-  // 指定されたフォーマットに基づいて日付を返す
-  switch (format) {
-    case "YYYY-MM-DD":
-      return `${year}-${month}-${day}`;
-    case "MM/DD/YYYY":
-      return `${month}/${day}/${year}`;
-    case "DD-MM-YYYY":
-      return `${day}-${month}-${year}`;
-    case "YYYY/MM/DD":
-      return `${year}/${month}/${day}`;
-    case "ISO":
-      return today.toISOString().split("T")[0]; // ISO形式 (YYYY-MM-DD)
-    default:
-      return `${year}-${month}-${day}`; // デフォルトで YYYY-MM-DD
-  }
+function getFormattedDate(format) {
+  const date = new Date();
+  return date.toISOString(); // ISO 8601形式で返す
 }
-
 const getUserCd = (req) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

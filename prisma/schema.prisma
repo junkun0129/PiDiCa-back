@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model comments {
+  comment_cd  String      @id @db.VarChar(255)
+  report_cd   String      @db.VarChar(255)
+  ri_cd       String      @db.VarChar(255)
+  created_at  DateTime    @db.DateTime(0)
+  created_by  String      @db.VarChar(255)
+  text        String      @db.Text
+  reports     reports     @relation(fields: [report_cd], references: [report_cd], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_1")
+  reportitems reportitems @relation(fields: [ri_cd], references: [ri_cd], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_2")
+
+  @@index([report_cd], map: "report_cd")
+  @@index([ri_cd], map: "ri_cd")
+}
+
+model membercards {
+  membercard_cd String             @id @db.Char(36)
+  project_cd    String             @db.Char(36)
+  user_cd       String             @db.Char(36)
+  status        membercards_status
+  created_at    DateTime?          @db.Date
+  updated_at    DateTime?          @db.Date
+  projects      projects           @relation(fields: [project_cd], references: [project_cd], onDelete: Cascade, onUpdate: NoAction, map: "membercards_ibfk_1")
+  users         users              @relation(fields: [user_cd], references: [user_cd], onDelete: Cascade, onUpdate: NoAction, map: "membercards_ibfk_2")
+
+  @@index([project_cd], map: "project_cd")
+  @@index([user_cd], map: "user_cd")
+}
+
+model projects {
+  project_cd   String        @id @db.Char(36)
+  project_name String        @db.VarChar(255)
+  created_at   DateTime      @db.Date
+  updated_at   DateTime      @db.Date
+  created_by   String?       @db.Char(36)
+  membercards  membercards[]
+  tasks        tasks[]
+}
+
+model reportitems {
+  ri_cd        String     @id @db.Char(36)
+  report_cd    String     @db.Char(36)
+  task_cd      String     @db.Char(36)
+  ri_starttime Int?
+  ri_endtime   Int?
+  ri_check     String?    @db.Text
+  ri_do        String?    @db.Text
+  ri_action    String?    @db.Text
+  ri_plan      String?    @db.Text
+  comments     comments[]
+  reports      reports    @relation(fields: [report_cd], references: [report_cd], onDelete: Cascade, onUpdate: NoAction, map: "reportitems_ibfk_1")
+  tasks        tasks      @relation(fields: [task_cd], references: [task_cd], onDelete: Cascade, onUpdate: NoAction, map: "reportitems_ibfk_2")
+
+  @@index([report_cd], map: "report_cd")
+  @@index([task_cd], map: "task_cd")
+}
+
+model reports {
+  report_cd         String                @id @db.Char(36)
+  user_cd           String                @db.Char(36)
+  report_created_at DateTime?             @db.Date
+  report_updated_at DateTime?             @db.Date
+  report_date       DateTime              @db.Date
+  report_status     reports_report_status
+  report_workhour   String                @db.VarChar(3)
+  comments          comments[]
+  reportitems       reportitems[]
+  users             users                 @relation(fields: [user_cd], references: [user_cd], onDelete: Cascade, onUpdate: NoAction, map: "reports_ibfk_1")
+
+  @@index([user_cd], map: "user_cd")
+}
+
+model tasks {
+  task_cd     String        @id @db.Char(36)
+  project_cd  String?       @db.Char(36)
+  user_cd     String?       @db.Char(36)
+  task_name   String        @db.VarChar(255)
+  task_detail String?       @db.Text
+  created_at  DateTime      @db.Date
+  updated_at  DateTime?     @db.Date
+  task_status String?       @db.Char(1)
+  reportitems reportitems[]
+  projects    projects?     @relation(fields: [project_cd], references: [project_cd], onUpdate: NoAction, map: "tasks_ibfk_1")
+  users       users?        @relation(fields: [user_cd], references: [user_cd], onUpdate: NoAction, map: "tasks_ibfk_2")
+
+  @@index([project_cd], map: "project_cd")
+  @@index([user_cd], map: "user_cd")
+}
+
+model users {
+  user_cd        String               @id @db.Char(36)
+  user_name      String               @db.VarChar(255)
+  user_img       String?              @db.VarChar(255)
+  user_is_manage users_user_is_manage @default(dbgenerated("0"))
+  user_email     String               @unique(map: "user_email") @db.VarChar(255)
+  user_password  String               @db.VarChar(255)
+  membercards    membercards[]
+  reports        reports[]
+  tasks          tasks[]
+}
+
+enum membercards_status {
+  zero @map("0")
+  one @map("1")
+}
+
+enum users_user_is_manage {
+   zero @map("0")
+  one @map("1")
+}
+
+enum reports_report_status {
+  zero @map("0")
+  one @map("1")
+}
