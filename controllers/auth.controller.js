@@ -8,7 +8,8 @@ const { users } = table;
 const { executeQuery, generateRandomString } = require("../utils/common.util");
 
 const generateToken = (user) => {
-  const payload = { email: user.email };
+  console.log(user, "user in generateToken");
+  const payload = { email: user.user_email, user_cd: user.user_cd };
   return jwt.sign(payload, jwtConfig.secret, {
     algorithm: jwtConfig.jwtAlgorithm,
     expiresIn: jwtConfig.expiresLong,
@@ -62,21 +63,23 @@ const signUpController = async (req, res) => {
 const signinController = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(email, password);
+    console.log(email, password, "iwatani");
     // Find user
-    const users = await executeQuery(
-      `SELECT * FROM ${table.users} WHERE user_email = ?`,
+    const row = await executeQuery(
+      `SELECT * FROM ${users} WHERE user_email = ?`,
       [email]
     );
-    console.log(users);
-    if (!users.length) {
+
+    console.log(`SELECT * FROM ${users} WHERE user_email = ?`, email);
+    console.log(row, "row");
+    if (!row.length) {
       return res.status(201).json({
         message: "そのメールアドレスで登録されているアカウントはありません",
         result: "failed",
       });
     }
 
-    const user = users[0];
+    const user = row[0];
     const isValidPassword = await bcrypt.compare(password, user.user_password);
 
     if (!isValidPassword) {

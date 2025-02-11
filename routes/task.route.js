@@ -7,7 +7,7 @@ const {
 } = require("../controllers/task.controller");
 const router = require("express").Router();
 
-router.post("/list", authMiddleware, getTaskList);
+router.get("/list", authMiddleware, getTaskList);
 router.post("/create", authMiddleware, createTask);
 router.post("/delete", authMiddleware, deleteTask);
 router.post("/update", authMiddleware, updateTask);

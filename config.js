@@ -4,5 +4,6 @@ module.exports = {
     reports: "reports",
     comments: "comments",
     tasks: "tasks",
+    projects: "projects",
   },
 };

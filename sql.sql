@@ -10,6 +10,7 @@ CREATE TABLE Users (
 CREATE TABLE Projects (
     project_cd CHAR(36) PRIMARY KEY,
     project_name VARCHAR(255) NOT NULL,
+    created_by CHAR(36) NOT NULL,
     created_at DATE NOT NULL,
     updated_at DATE NOT NULL
 );

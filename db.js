@@ -1,4 +1,4 @@
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 const dbConfig = {
@@ -7,17 +7,24 @@ const dbConfig = {
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "todo_app",
 };
-
 const pool = mysql.createPool(dbConfig);
 
-// Test the connection
-pool.getConnection((err, connection) => {
-  if (err) {
+// Promise版の接続テスト
+async function testConnection() {
+  try {
+    const connection = await pool.getConnection();
+    console.log("Successfully connected to database");
+    connection.release();
+  } catch (err) {
     console.error("Error connecting to the database:", err);
-    return;
+    throw err;
   }
-  console.log("Successfully connected to database");
-  connection.release();
+}
+
+// 接続テストを実行
+testConnection().catch((err) => {
+  console.error("Connection test failed:", err);
+  process.exit(1); // 接続失敗時はプロセスを終了
 });
 
 async function runTransaction(transactionCallback) {
