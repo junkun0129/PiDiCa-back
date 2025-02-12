@@ -3,10 +3,12 @@ const {
   getProjectList,
   createProject,
   deleteProject,
+  getProjectEntries,
 } = require("../controllers/project.controller");
 const router = require("express").Router();
 
-router.post("/list", authMiddleware, getProjectList);
+router.get("/list", authMiddleware, getProjectList);
+router.get("/entries", authMiddleware, getProjectEntries);
 router.post("/create", authMiddleware, createProject);
 router.post("/delete", authMiddleware, deleteProject);
 

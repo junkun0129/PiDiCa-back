@@ -7,8 +7,29 @@ const {
 } = require("../utils/common.util");
 const { projects } = table;
 const { prisma } = require("../db");
+
+const getProjectEntries = async (req, res) => {
+  try {
+    const user_cd = getUserCd(req);
+    const projectEntries = await prisma.projects.findMany({
+      select: {
+        project_name: true,
+        project_cd: true,
+      },
+      where: {
+        membercards: {
+          some: { user_cd },
+        },
+      },
+    });
+    res.status(200).json({ result: "success", data: projectEntries });
+  } catch (error) {
+    res.status(500).json({ result: "failed" });
+  }
+};
 const getProjectList = async (req, res) => {
   try {
+    console.log("object");
     const { offset = 0, pagination = 10 } = req.query;
     const user_cd = getUserCd(req);
     const projectsForUser = await prisma.projects.findMany({
@@ -26,6 +47,11 @@ const getProjectList = async (req, res) => {
           },
           select: {
             status: true,
+            users: {
+              select: {
+                user_name: true,
+              },
+            },
           },
         },
         _count: {
@@ -90,6 +116,7 @@ const deleteProject = async (req, res) => {
 };
 
 module.exports = {
+  getProjectEntries,
   getProjectList,
   createProject,
   deleteProject,
