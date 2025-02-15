@@ -5,6 +5,7 @@ const {
 } = require("../utils/common.util");
 const { prisma } = require("../db");
 const { reports_report_status } = require("@prisma/client");
+const dayjs = require("dayjs");
 const report_status_index = {
   0: reports_report_status.zero,
   1: reports_report_status.one,
@@ -53,6 +54,10 @@ const createReport = async (req, res) => {
   try {
     const { report_date, report_status, report_workhour, report_items } =
       req.body;
+
+    console.log(report_date, report_status, report_workhour, report_items);
+    const convertedReportDate = new Date(report_date).toISOString();
+    console.log(convertedReportDate, "convertedReportDate");
     const user_cd = getUserCd(req);
     const created_at = getFormattedDate("YYYY-MM-DD");
     const report_cd = generateRandomString(36);
@@ -74,8 +79,8 @@ const createReport = async (req, res) => {
         report_cd,
         user_cd,
         report_created_at: created_at,
-        report_date,
-        report_status,
+        report_date: convertedReportDate,
+        report_status: report_status_index[parseInt(report_status)],
         report_workhour,
         reportitems: {
           create: newItems,
