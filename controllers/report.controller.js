@@ -50,6 +50,39 @@ const getAvairableDate = async (req, res) => {
     res.status(500).json({ result: "failed" });
   }
 };
+const getReportList = async (req, res) => {
+  try {
+    const { offset, pagination, date } = req.query;
+    const user_cd = getUserCd(req);
+    console.log(user_cd);
+    const totalCount = await prisma.reports.count({
+      where: { user_cd, report_date: { gte: new Date(date).toISOString() } },
+    });
+    console.log(totalCount);
+    console.log(offset, pagination, date);
+    const records = await prisma.reports.findMany({
+      where: { user_cd, report_date: { gte: new Date(date).toISOString() } },
+      skip: parseInt(offset),
+      take: parseInt(pagination),
+      include: {
+        reportitems: {
+          select: {
+            ri_starttime: true,
+            ri_endtime: true,
+          },
+        },
+      },
+    });
+    console.log(records, "lkj");
+    res.json({
+      result: "success",
+      data: records,
+      total: totalCount,
+    });
+  } catch (err) {
+    res.status(500).json({ result: "failed" });
+  }
+};
 const createReport = async (req, res) => {
   try {
     const { report_date, report_status, report_workhour, report_items } =
@@ -98,4 +131,5 @@ const createReport = async (req, res) => {
 module.exports = {
   createReport,
   getAvairableDate,
+  getReportList,
 };
