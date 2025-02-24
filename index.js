@@ -15,6 +15,7 @@ app.use("/auth", require("./routes/auth.route"));
 app.use("/task", require("./routes/task.route"));
 app.use("/project", require("./routes/project.route"));
 app.use("/report", require("./routes/report.route"));
+app.use("/attend", require("./routes/attend.route"));
 
 http.listen(3000, () => {
   console.log("listen....");

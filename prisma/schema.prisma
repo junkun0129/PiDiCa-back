@@ -21,6 +21,25 @@ model comments {
   @@index([ri_cd], map: "ri_cd")
 }
 
+model dailyattends {
+  da_cd        String    @id @db.Char(36)
+  user_cd      String    @db.Char(36)
+  date         String?   @db.Char(2)
+  da_starttime String?   @db.Char(8)
+  da_endtime   String?   @db.Char(8)
+  da_workhour  Int?      @default(0)
+  da_night     Int?      @default(0)
+  da_over      Int?      @default(0)
+  da_rest      Int?      @default(0)
+  da_status    String?   @db.VarChar(10)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  da_yearmonth String?   @db.Char(7)
+  users        users     @relation(fields: [user_cd], references: [user_cd], onDelete: Cascade, onUpdate: NoAction, map: "dailyattends_ibfk_1")
+
+  @@index([user_cd], map: "user_cd")
+}
+
 model membercards {
   membercard_cd String             @id @db.Char(36)
   project_cd    String             @db.Char(36)
@@ -33,6 +52,21 @@ model membercards {
 
   @@index([project_cd], map: "project_cd")
   @@index([user_cd], map: "user_cd")
+}
+
+model monthlyattends {
+  ma_cd        String    @id @db.Char(36)
+  user_cd      String    @db.Char(36)
+  ma_yearmonth String    @db.Char(7)
+  ma_workhour  Int?      @default(0)
+  ma_night     Int?      @default(0)
+  ma_over      Int?      @default(0)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  users        users     @relation(fields: [user_cd], references: [user_cd], onDelete: Cascade, onUpdate: NoAction, map: "monthlyattends_ibfk_1")
+
+  @@unique([user_cd, ma_yearmonth], map: "unique_user_yearmonth")
+  @@unique([user_cd, ma_yearmonth], map: "user_cd")
 }
 
 model projects {
@@ -55,6 +89,8 @@ model reportitems {
   ri_do        String?    @db.Text
   ri_action    String?    @db.Text
   ri_plan      String?    @db.Text
+  created_at   DateTime?  @default(now()) @db.Timestamp(0)
+  ri_date      DateTime?  @db.DateTime(0)
   comments     comments[]
   reports      reports    @relation(fields: [report_cd], references: [report_cd], onDelete: Cascade, onUpdate: NoAction, map: "reportitems_ibfk_1")
   tasks        tasks      @relation(fields: [task_cd], references: [task_cd], onDelete: Cascade, onUpdate: NoAction, map: "reportitems_ibfk_2")
@@ -68,7 +104,7 @@ model reports {
   user_cd           String                @db.Char(36)
   report_created_at DateTime?             @db.Date
   report_updated_at DateTime?             @db.Date
-  report_date       DateTime              @db.Date
+  report_date       DateTime?             @db.DateTime(0)
   report_status     reports_report_status
   report_workhour   String                @db.VarChar(3)
   comments          comments[]
@@ -102,22 +138,24 @@ model users {
   user_is_manage users_user_is_manage @default(dbgenerated("0"))
   user_email     String               @unique(map: "user_email") @db.VarChar(255)
   user_password  String               @db.VarChar(255)
+  dailyattends   dailyattends[]
   membercards    membercards[]
+  monthlyattends monthlyattends[]
   reports        reports[]
   tasks          tasks[]
 }
 
 enum membercards_status {
   zero @map("0")
-  one @map("1")
+  one  @map("1")
 }
 
 enum users_user_is_manage {
-   zero @map("0")
-  one @map("1")
+  zero @map("0")
+  one  @map("1")
 }
 
 enum reports_report_status {
   zero @map("0")
-  one @map("1")
+  one  @map("1")
 }

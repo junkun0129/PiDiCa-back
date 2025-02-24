@@ -4,6 +4,7 @@ const {
   generateRandomString,
 } = require("../utils/common.util");
 const { prisma } = require("../db");
+const dayjs = require("dayjs");
 
 const getTaskList = async (req, res) => {
   try {
@@ -39,6 +40,58 @@ const getTaskList = async (req, res) => {
     const total = await prisma.tasks.count({ where: whereCondition });
 
     res.json({ result: "success", data: tasks, total });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ result: "failed" });
+  }
+};
+
+const getTaskItemsDates = async (req, res) => {
+  try {
+    const { task_cd } = req.query;
+    const taskItems = await prisma.reportitems.findMany({
+      where: { task_cd },
+      select: { ri_date: true, ri_starttime: true, ri_endtime: true },
+    });
+    let returnObject = {};
+
+    taskItems.forEach((item) => {
+      const formattedDate = dayjs(item.ri_date).format("YYYY-MM-DD");
+
+      if (!returnObject[formattedDate]) {
+        returnObject[formattedDate] = [];
+      }
+      returnObject[formattedDate].push(
+        `${item.ri_starttime}-${item.ri_endtime}`
+      );
+    });
+
+    res.json({ result: "success", data: returnObject });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ result: "failed" });
+  }
+};
+
+const getReportItemDetail = async (req, res) => {
+  try {
+    const { task_cd, starttime, endtime, date } = req.query;
+    const parsedStarttime = parseInt(starttime);
+    const parsedEndtime = parseInt(endtime);
+    if (isNaN(parsedStarttime) || isNaN(parsedEndtime)) {
+      return res.status(400).json({ error: "Invalid starttime or endtime" });
+    }
+    const formattedDate = new Date(date).toISOString();
+    const taskItem = await prisma.reportitems.findFirst({
+      where: {
+        task_cd,
+        ri_starttime: parsedStarttime,
+        ri_endtime: parsedEndtime,
+        ri_date: formattedDate,
+      },
+    });
+    console.log(taskItem, "taskItem");
+    res.json({ result: "success", data: taskItem });
   } catch (err) {
     console.error(err);
     res.status(500).json({ result: "failed" });
@@ -111,4 +164,6 @@ module.exports = {
   createTask,
   updateTask,
   deleteTask,
+  getTaskItemsDates,
+  getReportItemDetail,
 };

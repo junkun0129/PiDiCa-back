@@ -52,31 +52,45 @@ const getAvairableDate = async (req, res) => {
 };
 const getReportList = async (req, res) => {
   try {
-    const { offset, pagination, date } = req.query;
+    const { date } = req.query;
     const user_cd = getUserCd(req);
-    console.log(user_cd);
+
     const totalCount = await prisma.reports.count({
       where: { user_cd, report_date: { gte: new Date(date).toISOString() } },
     });
-    console.log(totalCount);
-    console.log(offset, pagination, date);
     const records = await prisma.reports.findMany({
       where: { user_cd, report_date: { gte: new Date(date).toISOString() } },
-      skip: parseInt(offset),
-      take: parseInt(pagination),
-      include: {
+      select: {
+        report_cd: true,
+        report_date: true,
+        report_status: true,
+        report_workhour: true,
+        report_created_at: true,
         reportitems: {
           select: {
+            tasks: {
+              select: {
+                task_name: true,
+              },
+            },
             ri_starttime: true,
             ri_endtime: true,
           },
         },
       },
     });
-    console.log(records, "lkj");
+
+    let formattedRecordsObject = {};
+    records.forEach((record) => {
+      const report_date = dayjs(record.report_date).format("DD");
+      const report_status = report_status_reverse_index[record.report_status];
+      formattedRecordsObject[`${report_date}-${report_status}`] = {
+        ...record,
+      };
+    });
     res.json({
       result: "success",
-      data: records,
+      data: formattedRecordsObject,
       total: totalCount,
     });
   } catch (err) {
@@ -88,9 +102,7 @@ const createReport = async (req, res) => {
     const { report_date, report_status, report_workhour, report_items } =
       req.body;
 
-    console.log(report_date, report_status, report_workhour, report_items);
     const convertedReportDate = new Date(report_date).toISOString();
-    console.log(convertedReportDate, "convertedReportDate");
     const user_cd = getUserCd(req);
     const created_at = getFormattedDate("YYYY-MM-DD");
     const report_cd = generateRandomString(36);
@@ -99,12 +111,13 @@ const createReport = async (req, res) => {
       return {
         ri_cd,
         task_cd: item.task_cd,
-        ri_starttime: item.starttime,
-        ri_endtime: item.endtime,
+        ri_starttime: parseInt(item.starttime),
+        ri_endtime: parseInt(item.endtime),
         ri_check: item.check,
         ri_do: item.do,
         ri_plan: item.plan,
         ri_action: item.action,
+        ri_date: convertedReportDate,
       };
     });
     const newReport = await prisma.reports.create({
