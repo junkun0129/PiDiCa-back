@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node api/index",
+    "build":"prisma generate --schema=api/prisma/schema.prisma",
     "dev": "nodemon api/index"
   },
   "author": "",
