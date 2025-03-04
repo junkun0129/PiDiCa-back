@@ -85,6 +85,7 @@ const createProject = async (req, res) => {
       status: i === user_cds.length - 1 ? "one" : "zero",
       created_at: today,
     }));
+    
     await prisma.projects.create({
       data: {
         project_cd,

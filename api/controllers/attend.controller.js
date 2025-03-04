@@ -104,7 +104,7 @@ const submitAttend = async (req, res) => {
     await prisma.dailyattends.createMany({
       data: daily_attends,
     });
-
+    
     await prisma.monthlyattends.create({
       data: {
         user_cd,
