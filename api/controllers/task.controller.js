@@ -5,6 +5,18 @@ const {
 } = require("../utils/common.util");
 const { prisma } = require("../db");
 const dayjs = require("dayjs");
+const getTask = async (req, res) => {
+  try {
+    const { task_cd } = req.query;
+    const user_cd = getUserCd(req);
+    const task = await prisma.tasks.findUnique({
+      where: { task_cd, user_cd },
+    });
+    res.json({ result: "success", data: task });
+  } catch (err) {
+    res.status(500).json({ result: "failed" });
+  }
+};
 
 const getTaskList = async (req, res) => {
   try {
@@ -90,10 +102,8 @@ const getReportItemDetail = async (req, res) => {
         ri_date: formattedDate,
       },
     });
-    console.log(taskItem, "taskItem");
     res.json({ result: "success", data: taskItem });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ result: "failed" });
   }
 };
@@ -161,6 +171,7 @@ const testController = (req, res) => {
 module.exports = {
   testController,
   getTaskList,
+  getTask,
   createTask,
   updateTask,
   deleteTask,
